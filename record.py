@@ -4,11 +4,14 @@ import csv
 import datetime
 import sys
 import os
+import util
 
 #
-# usage: record <activity> [0-23]-[0-23]
-# record <activity> by the hour into a csv file
-#
+# usage:
+# record <activity> [0-23]-[0-23]
+#   records <activity> by the hour into a csv file
+# record show
+#   prints activities added today
 
 catagories = [
     "code",
@@ -31,8 +34,7 @@ record_file = os.path.expanduser('~/.record')
 
 def main():
     args = sys.argv
-
-    date_today = get_date(args)
+    date_today = util.get_date(args)
     if args[1] == 'show':
         print_day(str(date_today))
         return
@@ -42,7 +44,6 @@ def main():
         return
 
     new_activity = args[1]
-
     if new_activity not in catagories:
         print 'activity {} is not in list'.format(args[2])
         return
@@ -51,38 +52,27 @@ def main():
 
 
 def record_activity(new_activity, interval, date):
-    fieldnames = ['date'] + [str(x) for x in range(0,24)]
-    start, end = (int(i) for i in interval.split('-'))
+    start, end = util.parse_interval(interval)
     if start >= end:
         print 'invalid time interval {}-{}'.format(start, end)
 
     record_list = load_record()
+    line, record = get_record(record_list, str(date))
+    if line != -1:
+        record_list[line] = util.modify_record(record, start, end, new_activity)
+    else:
+        activity = {'date':str(date)}
+        activity = util.modify_record(activity, start, end, new_activity)
+        record_list.append(activity)
+    update_record(record_list)
+
+def update_record(record_list):
+    fieldnames = ['date'] + [str(x) for x in range(0,24)]
     with open(record_file, 'wb+') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
-        
-        modifying = False
-        for line, row in enumerate(record_list):
-            modified_row = row
-            if row['date'] == str(date):
-                modified_row = modify_record(row, start, end, new_activity)
-                modifying = True
-            writer.writerow(modified_row)
-   
-        if not modifying:
-            activity = {'date':str(date)}
-            activity = modify_record(activity, start, end, new_activity)
-            writer.writerow(activity)
-
-
-def get_date(args):
-    date_today = datetime.date.today()
-    if len(args) == 4:
-        if args[3] == 'yesterday':
-            date_today = datetime.date.today() - datetime.timedelta(days=1)
-        else:
-            date_today = datetime.datetime.strptime(args[3],'%Y-%m-%d').date()
-    return date_today
+        for record in record_list:
+            writer.writerow(record)
 
 def load_record():
     record_list = list()
@@ -93,14 +83,9 @@ def load_record():
         record_list.extend(reader)
     return record_list
 
-def modify_record(activity, start, end, activity_name):
-    for i in range(start, end):
-        activity[str(i)] = activity_name
-    return activity
-
 def print_day(day):
     record_list = load_record()
-    record = get_record(record_list, day)
+    _, record = get_record(record_list, day)
     print "Today: {}".format(record['date'])
     for t in range(0, 24):
         print '{}: {}'.format(str(t).rjust(3), record.get(str(t)) or 'nothing')
@@ -108,8 +93,8 @@ def print_day(day):
 def get_record(record_list, day):
     for line, row in enumerate(record_list):
         if row['date'] == day:
-            return record_list[line]
-    return dict()
+            return (line, record_list[line])
+    return (-1, dict())
 
 if __name__ == '__main__':
     main()
