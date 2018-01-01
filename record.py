@@ -22,11 +22,13 @@ catagories = [
     "transit",
     "exam",
     "social",
+    "coding",
 ]
 
 def main():
     args = sys.argv
     record_file = os.path.expanduser('~/.record')
+    fieldnames = ['date'] + [str(x) for x in range(0,24)]
 
     if len(args) != 3:
         print "You're missing something"
@@ -37,21 +39,20 @@ def main():
         return
 
     start, end = (int(i) for i in args[2].split('-'))
+    if start >= end:
+        print "invalid time interval {}-{}".format(start, end)
 
-    fieldnames = ['date'] + [str(x) for x in range(0,24)]
     date_today = datetime.date.today()
     activity = {'date':str(date_today)}
 
-    file_exists = os.path.exists(record_file)
-
     activity_list = list()
-    
+    file_exists = os.path.exists(record_file)
     if file_exists:
-        with open(record_file, 'r+') as csvfile:
+        with open(record_file, 'rb') as csvfile:
             reader = csv.DictReader(csvfile)
             activity_list.extend(reader)
         
-    with open(record_file, 'w+') as csvfile:
+    with open(record_file, 'wb+') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         
