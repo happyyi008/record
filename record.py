@@ -30,11 +30,13 @@ def main():
     record_file = os.path.expanduser('~/.record')
     fieldnames = ['date'] + [str(x) for x in range(0,24)]
 
-    if len(args) != 3:
+    if len(args) < 3:
         print "You're missing something"
         return
 
-    if args[1] not in catagories:
+    new_activity = args[1]
+
+    if new_activity not in catagories:
         print "activity {} is not in list".format(args[2])
         return
 
@@ -43,6 +45,12 @@ def main():
         print "invalid time interval {}-{}".format(start, end)
 
     date_today = datetime.date.today()
+    if len(args) == 4:
+        if args[3] == 'yesterday':
+            date_today = datetime.date.today() - datetime.timedelta(days=1)
+        else:
+            date_today = datetime.datetime.strptime(args[3],"%Y-%m-%d").date()
+
     activity = {'date':str(date_today)}
 
     activity_list = list()
@@ -60,12 +68,12 @@ def main():
         for line, row in enumerate(activity_list):
             modified_row = row
             if row['date'] == str(date_today):
-                modified_row = modify_activity(row, start, end, args[1])
+                modified_row = modify_activity(row, start, end, new_activity)
                 modifying = True
             writer.writerow(modified_row)
    
         if not modifying:
-            activity = modify_activity(activity, start, end, args[1])
+            activity = modify_activity(activity, start, end, new_activity)
             writer.writerow(activity)
 
 
