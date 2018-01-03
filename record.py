@@ -17,6 +17,7 @@ catagories = [
     "code",
     "cook",
     "chill",
+    "class",
     "eat",
     "exam",
     "exercise",
@@ -34,7 +35,7 @@ record_file = os.path.expanduser('~/.record')
 
 def main():
     args = sys.argv
-    date_today = util.get_date(args)
+    date_today = util.get_date(args[2:])
     if args[1] == 'show':
         print_day(str(date_today))
         return
@@ -45,7 +46,7 @@ def main():
 
     new_activity = args[1]
     if new_activity not in catagories:
-        print 'activity {} is not in list'.format(args[2])
+        print 'activity {} is not in list'.format(new_activity)
         return
 
     record_activity(new_activity, args[2], date_today)
@@ -83,16 +84,18 @@ def load_record():
         record_list.extend(reader)
     return record_list
 
-def print_day(day):
+def print_day(date):
     record_list = load_record()
-    _, record = get_record(record_list, day)
+    _, record = get_record(record_list, date)
+    if not record:
+        record['date'] = date
     print "Today: {}".format(record['date'])
     for t in range(0, 24):
         print '{}: {}'.format(str(t).rjust(3), record.get(str(t)) or 'nothing')
 
-def get_record(record_list, day):
+def get_record(record_list, date):
     for line, row in enumerate(record_list):
-        if row['date'] == day:
+        if row['date'] == date:
             return (line, record_list[line])
     return (-1, dict())
 

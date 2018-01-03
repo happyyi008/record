@@ -8,13 +8,16 @@ def parse_interval(interval):
         return (l[0], l[0]+1)
     return tuple(l) 
 
-def get_date(args):
+def get_date(input_time):
     date_today = datetime.date.today()
-    if len(args) == 4:
-        if args[3] == 'yesterday':
-            date_today = datetime.date.today() - datetime.timedelta(days=1)
-        else:
-            date_today = datetime.datetime.strptime(args[3],'%Y-%m-%d').date()
+    if not input_time:
+        return date_today
+
+    date_str = input_time[0] if len(input_time) == 1 else input_time[1]
+    if date_str == 'yesterday':
+        date_today = datetime.date.today() - datetime.timedelta(days=1)
+    else:
+        date_today = datetime.datetime.strptime(date_str,'%Y-%m-%d').date()
     return date_today
 
 def modify_record(activity, start, end, activity_name):
