@@ -10,10 +10,9 @@ def parse_interval(interval):
 
 def get_date(input_time):
     date_today = datetime.date.today()
-    if not input_time:
+    if len(input_time) is not 1:
         return date_today
-
-    date_str = input_time[0] if len(input_time) == 1 else input_time[1]
+    date_str = input_time[0]
     if date_str == 'yesterday':
         date_today = datetime.date.today() - datetime.timedelta(days=1)
     else:
