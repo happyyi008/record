@@ -36,8 +36,8 @@ record_file = os.path.expanduser('~/.record')
 def main():
     args = sys.argv
     if args[1] == 'show':
-        date_today = util.get_date(args[2:])
-        print_day(str(date_today))
+        show_date = util.get_date(args[2:])
+        print_day(str(show_date))
         return
 
     if len(args) < 3 and args[1] != 'show':
@@ -48,8 +48,8 @@ def main():
     if new_activity not in catagories:
         print 'activity {} is not in list'.format(new_activity)
         return
-    date_today = util.get_date(args[3:])
-    record_activity(new_activity, args[2], date_today)
+    record_date = util.get_date(args[3:])
+    record_activity(new_activity, args[2], record_date)
 
 
 def record_activity(new_activity, interval, date):
